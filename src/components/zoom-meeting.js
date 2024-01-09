@@ -3,10 +3,9 @@ import { getaccessToken } from "@/actions/get-access-token";
 import { scheduleMeeting } from "@/actions/schedule-meeting";
 import { ZoomMtg } from "@zoomus/websdk";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import ScheduleMeetingForm from "./schedule-meeting-form";
-import { useRouter } from "next/navigation";
+import Home from "./home";
 
 ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.2/lib', '/av');
 ZoomMtg.preLoadWasm();
@@ -15,108 +14,62 @@ ZoomMtg.i18n.load('en-US');
 ZoomMtg.i18n.reload('en-US');
 
 const ZoomMeeting = () => {
-    const router = useRouter();
     const query = useSearchParams();
+    const router = useRouter();
     const authToken = query.get("code") || "";
     const [token, settoken] = useState("");
-    const [accesstoken, setaccesstoken] = useState("");
-    const [meetingDetails, setmeetingDetails] = useState({id:"",password:""})
-    const [showScheduleForm, setShowScheduleForm] = useState(false); 
-    const [meetingData, setMeetingData] = useState();
+    
+    const [meetingDetails, setMeetingDetails] = useState({id:"",password:""})
+    const [showForm, setshowForm] = useState(false)
+ 
 
     useEffect(() => {
-        console.log("access token : ", authToken);
-        if (fetchZak) {
-            fetchZak(authToken);
+
+        const rootElement = document.getElementById("zmmtg-root");
+        if (rootElement) {
+            rootElement.remove();
         }
-    }, [authToken]);
 
 
-    const fetchZak = async (authToken) => {
-        try {
-            const zakReq = await fetch(
-                `https://api.zoom.us/v2/users/me/token?type=zak`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${authToken || "ixPfTrr5codJbC7pJkTQ8mf9-N7MIR9sQ"}`,
-                    },
-                }
-            );
-    
-            const { token } = await zakReq.json();
-            console.log("zak token : ", token);
-    
-            if (token) {
-                settoken(token);
-            }
-        } catch (error) {
-            console.error("Error fetching Zak token:", error);
-        }
-    };
-    
-    
-    const accessToken = async () => {
-        const at = await getaccessToken({ authToken: authToken })
-        setaccesstoken(at)
-    }
+        setshowForm(true)
+        // if(authToken){
+        //     accessToken
+        // }
+    }, [authToken])
 
-    //  const accessToken = async (authCode) => {
+
+
+    // const fetchZak = async (authToken) => {
     //     try {
-    //         const at = await getaccessToken({ authToken: authCode });
-    //         setaccesstoken(at);
-    //     } catch (error) {
-    //         console.error("Error getting access token:", error);
-    //     }
-    // }
-
-
-
-
-
-    // const schedulemeeting = async () => {
-    //     try {
-
-    //         const authorizeResponse = await fetch(
-    //             `https://zoom.us/oauth/authorize?response_type=code&client_id=Uyn9IsyIThStBELbW_Pn3w&redirect_uri=${process.env.NEXT_PUBLIC_URL}`,
+    //         const zakReq = await fetch(
+    //             `https://api.zoom.us/v2/users/me/token?type=zak`,
     //             {
     //                 method: "GET",
+    //                 headers: {
+    //                     Authorization: `Bearer ${authToken || "ixPfTrr5codJbC7pJkTQ8mf9-N7MIR9sQ"}`,
+    //                 },
     //             }
     //         );
-
-    //         // Check if authorization was successful (You might need to handle redirects appropriately)
-    //         if (!authorizeResponse.ok) {
-    //             throw new Error("Authorization failed");
+    
+    //         const { token } = await zakReq.json();
+    //         console.log("zak token : ", token);
+    
+    //         if (token) {
+    //             settoken(token);
     //         }
-
-    //         // Extract the authorization code from the response or URL depending on your flow
-    //         const authorizationCode = ""; // Extract the code from the response
-
-    //         // Set the access token
-    //         await accessToken(authorizationCode);
-
-    //         // Set the meeting details
-    //         const md = await scheduleMeeting({ accesstoken: accesstoken });
-    //         setmeetingDetails(md.json);
-
-    //         // Show the schedule form
-    //         setShowScheduleForm(true);
-
     //     } catch (error) {
-    //         console.error("Error scheduling meeting:", error);
+    //         console.error("Error fetching Zak token:", error);
     //     }
-    // }
-
-    const schedulemeet = async () => {
-        await getauthorize 
-        await accessToken
-        
-        setShowScheduleForm(true);
-    }
-
-    const scheduleform = async () => {
-        const md = await scheduleMeeting({ accesstoken: accesstoken, meetingData: meetingData })
-        setmeetingDetails(md.json)
+    // };
+    
+    
+    const schedulemeeting = async () => {
+        router.push(`https://zoom.us/oauth/authorize?response_type=code&client_id=Uyn9IsyIThStBELbW_Pn3w&redirect_uri=${process.env.NEXT_PUBLIC_URL}/schedule`)
+        const token =  query.get("code");
+        console.log("auth", authToken)
+        settoken(token || "")
+        // console.log("auth", authToken)
+        console.log("access", accesstoken)
     }
 
 
@@ -202,37 +155,22 @@ const ZoomMeeting = () => {
         }
     };
 
-    const getauthorize = async ()=> {
-        router.push(`https://zoom.us/oauth/authorize?response_type=code&client_id=Uyn9IsyIThStBELbW_Pn3w&redirect_uri=${process.env.NEXT_PUBLIC_URL}`)
-
-    }
+    
 
     return (
-        <div className="flex z-[9999] fixed top-0 bg-orange-500 text-xl p-4 text-white gap-8">
-            {/* <Link
-                href={`https://zoom.us/oauth/authorize?response_type=code&client_id=Uyn9IsyIThStBELbW_Pn3w&redirect_uri=${process.env.NEXT_PUBLIC_URL}`}
-            > authorize
-            </Link> */}
-
-            {/* <button onClick={accessToken}>get access token</button> */}
-
-
-            <button onClick={schedulemeet}>Schedule Meeting</button>
-            <button onClick={startMeeting}>Start Meeting</button>
-            <button onClick={joinMeeting}>Join Meeting</button>
-
-            {/*  Conditional rendering of ScheduleMeetingForm  */}
-
-            {showScheduleForm && (
-                <ScheduleMeetingForm
-                    // accessToken={accesstoken}
-                    setMeetingDetails={setmeetingDetails}
-                    // setShowScheduleForm={setShowScheduleForm}
-                    scheduleform={scheduleform}
-                    setMeetingData={setMeetingData}
-                />
-            )}
-
+        <div className="h-screen  w-screen flex items-center justify-center gap-10 p-10">
+            <div className="flex z-[9999] fixed top-0 bg-orange-500 text-xl p-4 text-white gap-8">
+                <button onClick={schedulemeeting}>scheduleMeeting</button>
+                <button onClick={startMeeting}>Start Meeting</button>
+                <button onClick={joinMeeting}>Join Meeting</button>
+            </div>
+            <Home/>
+            {/* {showForm && <Home setmeetinginfo={setMeetingDetails}  />}
+            {showForm && <div>
+                <h1 className="text-xl">Meeting Details</h1>
+                <p>meeting id : {meetingDetails.id}</p>
+                <p>meeting password : {meetingDetails.password}</p>
+            </div>} */}
         </div>
     );
 };
